@@ -21,6 +21,7 @@ services:
       - DB_URL=postgres://user:password@database:5432/sport-objects
       - DEBUG=True
       - WAIT_FOR_IT=database:5432
+      - LOAD_DATA=True
 
   frontend:
     build: ./frontend

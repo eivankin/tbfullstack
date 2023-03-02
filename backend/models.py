@@ -148,3 +148,8 @@ SportObjectType_Pydantic = pydantic_model_creator(
 )
 SportType_Pydantic = pydantic_model_creator(SportType, name="SportType")
 Locality_Pydantic = pydantic_model_creator(Locality, name="Locality")
+SportObjectShort_Pydantic = pydantic_model_creator(
+    SportObject,
+    name="SportObjectShort",
+    include=("id", "latitude", "longitude", "is_active"),
+)

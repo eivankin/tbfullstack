@@ -1,8 +1,8 @@
-import uvicorn
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 
-from config import DB_URL, LOAD_DATA
+from config import DB_URL, LOAD_DATA, DEBUG
 from load_data import load
 from models import (
     SportObject_Pydantic,
@@ -19,25 +19,32 @@ from models import (
     SportObjectType,
     SportObjectSignificance,
     ContestType_Pydantic,
-    ContestType
+    ContestType,
+    SportObjectShort_Pydantic
 )
 
-app = FastAPI()
+app = FastAPI(debug=DEBUG)
+
+app.add_middleware(
+    CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"]
+)
 
 
-@app.get("/sport-object/", response_model=list[SportObject_Pydantic])
+@app.get("/sport-objects/", response_model=list[SportObjectShort_Pydantic])
 async def get_sport_objects(
-    fed_entity_id: int | None = Query(None, description="ID субъекта федерации"),
-    district_id: int | None = Query(None, description="ID МО"),
-    locality_id: int | None = Query(None, description="ID населённого пункта"),
-    sport_type_id: int | None = Query(None, description="ID вида спорта"),
-    sport_object_type_id: int
-    | None = Query(None, description="ID типа спортивного комплекса"),
-    is_active: bool | None = Query(None, description="Активный ли спортивный комплекс"),
-    significance: SportObjectSignificance
-    | None = Query(None, description="Значимость спортивного объекта"),
-    contest_type_id: int | None = Query(None, description="ID типов соревнований")
+        fed_entity_id: int | None = Query(None, description="ID субъекта федерации"),
+        district_id: int | None = Query(None, description="ID МО"),
+        locality_id: int | None = Query(None, description="ID населённого пункта"),
+        sport_type_id: int | None = Query(None, description="ID вида спорта"),
+        sport_object_type_id: int
+                              | None = Query(None, description="ID типа спортивного комплекса"),
+        is_active: bool | None = Query(None, description="Активный ли спортивный комплекс"),
+        significance: SportObjectSignificance
+                      | None = Query(None, description="Значимость спортивного объекта"),
+        contest_type_id: int | None = Query(None, description="ID типов соревнований"),
 ):
+    # TODO: return only coordinates (maybe 1-2 extra attributes)
+    # TODO: add separate endpoint for full info for popup
     query = SportObject.all()
     if fed_entity_id is not None:
         query = query.filter(locality__district__federation_entity__id=fed_entity_id)
@@ -63,17 +70,22 @@ async def get_sport_objects(
     if contest_type_id is not None:
         query = query.filter(contest_types__id=contest_type_id)
 
-    return await SportObject_Pydantic.from_queryset(query)
+    return await SportObjectShort_Pydantic.from_queryset(query)
 
 
-@app.get("/federation-entity/", response_model=list[FederationEntity_Pydantic])
+@app.get("/sport-objects/{sport_object_short_id}", response_model=SportObject_Pydantic)
+async def get_sport_object(sport_object_short_id: int):
+    return await SportObject_Pydantic.from_queryset_single(SportObject.get(id=sport_object_short_id))
+
+
+@app.get("/federation-entities/", response_model=list[FederationEntity_Pydantic])
 async def get_entities():
     return await FederationEntity_Pydantic.from_queryset(FederationEntity.all())
 
 
-@app.get("/district/", response_model=list[District_Pydantic])
+@app.get("/districts/", response_model=list[District_Pydantic])
 async def get_districts(
-    fed_entity_id: int = Query(None, description="ID субъекта федерации")
+        fed_entity_id: int = Query(None, description="ID субъекта федерации")
 ):
     query = District.all()
     if fed_entity_id is not None:
@@ -81,10 +93,10 @@ async def get_districts(
     return await District_Pydantic.from_queryset(query)
 
 
-@app.get("/locality/", response_model=list[Locality_Pydantic])
+@app.get("/localities/", response_model=list[Locality_Pydantic])
 async def get_localities(
-    district_id: int = Query(None, description="ID МО"),
-    fed_entity_id: int = Query(None, description="ID субъекта федерации"),
+        district_id: int = Query(None, description="ID МО"),
+        fed_entity_id: int = Query(None, description="ID субъекта федерации"),
 ):
     query = Locality.all()
     if fed_entity_id is not None:
@@ -96,17 +108,17 @@ async def get_localities(
     return await Locality_Pydantic.from_queryset(query)
 
 
-@app.get("/sport-type/", response_model=list[SportType_Pydantic])
+@app.get("/sport-types/", response_model=list[SportType_Pydantic])
 async def get_sport_types():
     return await SportType_Pydantic.from_queryset(SportType.all())
 
 
-@app.get("/sport-object-type/", response_model=list[SportObjectType_Pydantic])
+@app.get("/sport-object-types/", response_model=list[SportObjectType_Pydantic])
 async def get_sport_object_types():
     return await SportObjectType_Pydantic.from_queryset(SportObjectType.all())
 
 
-@app.get("/contest-type/", response_model=list[ContestType_Pydantic])
+@app.get("/contest-types/", response_model=list[ContestType_Pydantic])
 async def get_contest_types():
     return await ContestType_Pydantic.from_queryset(ContestType.all())
 
@@ -116,14 +128,11 @@ register_tortoise(
     db_url=DB_URL,
     modules={"models": ["models"]},
     generate_schemas=True,
+    add_exception_handlers=True
 )
 
 
 @app.on_event("startup")
 async def startup():
-    if LOAD_DATA:
+    if LOAD_DATA and (await SportObject.all().count()) == 0:
         await load()
-
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
