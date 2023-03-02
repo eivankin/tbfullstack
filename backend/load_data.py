@@ -22,18 +22,18 @@ from pydantic import BaseModel, Field, validator, ValidationError
 class SportObjectCSV(BaseModel):
     id: int = Field(alias="id:")
     name: str = Field(alias="Название:")
-    name_en: str = Field(alias="Название (in english):")
+    name_en: str | None = Field(alias="Название (in english):")
     is_active: bool = Field(alias="Активный:")
-    short_description: str = Field(alias="Краткое описание:")
-    full_description: str = Field(alias="Детальное описание:")
-    short_description_en: str = Field(alias="Краткое описание (in english):")
-    full_description_en: str = Field(alias="Детальное описание (in english):")
+    short_description: str | None = Field(alias="Краткое описание:")
+    full_description: str | None = Field(alias="Детальное описание:")
+    short_description_en: str | None = Field(alias="Краткое описание (in english):")
+    full_description_en: str | None = Field(alias="Детальное описание (in english):")
     federation_entity: str = Field(alias="Субъект федерации:")
     district: str = Field(alias="МО:")
     locality: str = Field(alias="Населённый пункт:")
-    locality_en: str = Field(alias="Населённый пункт (in english):")
+    locality_en: str | None = Field(alias="Населённый пункт (in english):")
     address: str = Field(alias="Адрес:")
-    address_en: str = Field(alias="Адрес (in english):")
+    address_en: str | None = Field(alias="Адрес (in english):")
     applied_action: SportObjectAction = Field(alias="Действия с объектом:")
     construction_start_date: dt.date | None = Field(
         alias="Дата начала строительства / реконструкции:"
@@ -43,9 +43,9 @@ class SportObjectCSV(BaseModel):
     )
     total_funds: int = Field(alias="Общий объём финансирования:")
     phone_number: str | None = Field(alias="контактный телефон объекта:")
-    email: str = Field(alias="E-mail:")
-    site_url: str = Field(alias="URL сайта:")
-    sport_object_type: str = Field(alias="Тип спортивного комплекса:")
+    email: str | None = Field(alias="E-mail:")
+    site_url: str | None = Field(alias="URL сайта:")
+    sport_object_type: str | None = Field(alias="Тип спортивного комплекса:")
     contest_types: list[str] = Field(alias="Какие соревнования проводятся?:")
     sport_types: list[str] = Field(alias="Виды спорта:")
     latitude: float = Field(alias="Яндекс координата объекта Y:")
@@ -59,25 +59,24 @@ class SportObjectCSV(BaseModel):
 
     @validator("contest_types", "sport_types", pre=True)
     def parse_lists(cls, v: str) -> list[str]:
-        return [x.strip() for x in v.split(",")]
-
-    @validator("significance", pre=True)
-    def parse_significance(cls, v: str) -> SportObjectSignificance | None:
         if not v:
-            return None
-        return SportObjectSignificance(v)
+            return []
+        return [x.strip() for x in v.split(",")]
 
 
 async def load():
     with open(DATA_PATH) as input_file:
         reader = csv.DictReader(input_file)
         for row in reader:
+            for key in row:
+                if row[key] == "":
+                    row[key] = None
+
             try:
                 raw_obj = SportObjectCSV(**row)
             except ValidationError as e:
                 print(row, e, file=sys.stderr)
                 continue
-            # print(raw_obj)
             fed_entity, _ = await FederationEntity.get_or_create(
                 name=raw_obj.federation_entity
             )
@@ -87,14 +86,19 @@ async def load():
             locality, _ = await Locality.get_or_create(
                 name=raw_obj.locality, name_en=raw_obj.locality_en, district=district
             )
-            sport_object_type, _ = await SportObjectType.get_or_create(
-                name=raw_obj.sport_object_type
-            )
+            if raw_obj.sport_object_type:
+                sport_object_type, _ = await SportObjectType.get_or_create(
+                    name=raw_obj.sport_object_type
+                )
+            else:
+                sport_object_type = None
             sport_types = [
-                (await SportType.get_or_create(name=st))[0] for st in raw_obj.sport_types
+                (await SportType.get_or_create(name=st))[0]
+                for st in raw_obj.sport_types
             ]
             contest_types = [
-                (await ContestType.get_or_create(name=ct))[0] for ct in raw_obj.contest_types
+                (await ContestType.get_or_create(name=ct))[0]
+                for ct in raw_obj.contest_types
             ]
 
             saved_object = await SportObject.create(
