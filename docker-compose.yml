@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  database:
+    image: postgres:latest
+    volumes:
+      - /var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=sport-objects
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+
+
+  backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - database
+    environment:
+      - DB_URL=postgres://user:password@database:5432/sport-objects
+      - DEBUG=True
+      - WAIT_FOR_IT=database:5432
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_ENDPOINT=https://backend:8080
