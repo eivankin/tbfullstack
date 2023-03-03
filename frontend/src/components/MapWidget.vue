@@ -23,7 +23,7 @@
 </template>
 <script lang="ts">
 import axios from 'axios'
-import { defineComponent } from 'vue'
+import {createApp, defineComponent} from 'vue'
 import Spinner from '@/components/Spinner.vue'
 import type { SportObject, SportObjectInfo } from '@/types'
 import IsLoaded from '@/components/IsLoaded.vue'
@@ -69,7 +69,10 @@ export default defineComponent({
       axios
         .get(`${import.meta.env.VITE_API_ENDPOINT}/sport-objects/${objectId}`)
         .then((response: { data: SportObjectInfo }) => {
-          container.innerHTML = response.data.name
+          // const tempDiv = document.createElement('div')
+          // let card = createApp(SportObjectCard).mount(tempDiv)
+          // card.$data.sportObject = response.data
+          // container.innerHTML = card.$el.outerHTML
         })
     },
     getStats(): void {
