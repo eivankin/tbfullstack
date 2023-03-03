@@ -78,7 +78,6 @@ export default defineComponent({
     randomColors(count: number): string[] {
       let result: string[] = Array(count)
       result.fill('')
-      console.log(result.map(() => this.randomColor()))
       return result.map(() => this.randomColor())
     },
     statsDataUpd(activityData: number[], sportTypes: string[], sportTypesData: number[]) {
@@ -95,5 +94,8 @@ export default defineComponent({
 <style scoped>
 #tabs {
   margin-top: 0.5em;
+}
+.chart-container {
+  min-height: 1000px;
 }
 </style>

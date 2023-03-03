@@ -28,6 +28,7 @@ import Spinner from '@/components/Spinner.vue'
 import type { SportObject, SportObjectInfo } from '@/types'
 import IsLoaded from '@/components/IsLoaded.vue'
 import SportObjectCard from '@/components/SportObjectCard.vue'
+import type {ComponentPublicInstance} from 'vue'
 
 export default defineComponent({
   components: { Spinner, IsLoaded, SportObjectCard },
@@ -69,10 +70,11 @@ export default defineComponent({
       axios
         .get(`${import.meta.env.VITE_API_ENDPOINT}/sport-objects/${objectId}`)
         .then((response: { data: SportObjectInfo }) => {
-          // const tempDiv = document.createElement('div')
-          // let card = createApp(SportObjectCard).mount(tempDiv)
-          // card.$data.sportObject = response.data
-          // container.innerHTML = card.$el.outerHTML
+          container.innerHTML = ''
+          const tempDiv = document.createElement('div')
+          let card = createApp(SportObjectCard).mount(tempDiv) as ComponentPublicInstance & {sportObject: SportObjectInfo}
+          card.sportObject = response.data
+          container.appendChild(card.$el)
         })
     },
     getStats(): void {

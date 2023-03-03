@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid d-flex">
+  <div class="container-fluid chart-container">
     <IsLoaded :is-loaded="isLoaded" />
     <Pie
       :options="chartOptions"

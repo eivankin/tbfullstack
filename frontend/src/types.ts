@@ -7,7 +7,7 @@ export type SportObject = {
 }
 
 export type SportObjectInfo = {
-  name: string
+  name: string | null
   short_description: string | null
   full_description: string | null
   address: string | null
