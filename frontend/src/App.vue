@@ -1,63 +1,53 @@
-<script setup lang="ts"></script>
-import Spinner from './components/Spinner.vue'
 <template>
-  <main>
-    <mapbox-map :access-token="accessToken" height="1000px">
-      <mapbox-navigation-control />
-      <mapbox-marker
-        v-for="object in sportObjects"
-        :lng-lat="[object.longitude, object.latitude]"
-        :color="object.is_active ? 'green' : 'red'"
-      >
-        <mapbox-popup @open="loadData(object.id, $event)" :offset="[0, -30]">
-          <Spinner />
-        </mapbox-popup>
-      </mapbox-marker>
-    </mapbox-map>
+  <main class="container-fluid">
+    <div class="row">
+      <div class="col-4">
+        <tabs
+            nav-class="nav nav-tabs"
+            nav-item-class="nav-item"
+            nav-item-link-class="nav-link"
+            nav-item-link-active-class="nav-link active"
+            id="tabs"
+        >
+          <tab name="Поиск" class="nav-item">
+            <FilterForm ref="form" :onSubmit="onFilterSubmit" />
+          </tab>
+          <tab name="Статистика"> </tab>
+        </tabs>
+      </div>
+      <div class="col-8">
+        <MapWidget ref="map" />
+      </div>
+    </div>
   </main>
 </template>
 <script lang="ts">
-import axios from 'axios'
+import MapWidget from '@/components/MapWidget.vue'
+import FilterForm from '@/components/FilterForm.vue'
 import { defineComponent } from 'vue'
-import Spinner from '@/components/Spinner.vue'
-
-type SportObject = {
-  id: number
-  latitude: number
-  longitude: number
-  is_active: boolean
-}
-
-type SportObjectInfo = {
-  name: string
-}
+import type { FormRef, MapRef } from '@/types'
 
 export default defineComponent({
-  components: { Spinner },
-
-  data(): { accessToken: string; sportObjects: SportObject[] } {
-    return {
-      accessToken: import.meta.env.VITE_MAPBOX_API_KEY,
-      sportObjects: []
-    }
-  },
+  components: { MapWidget, FilterForm },
   methods: {
-    getSportObjects() {
-      axios.get(`${import.meta.env.VITE_API_ENDPOINT}/sport-objects/`).then((response) => {
-        this.sportObjects = response.data
-      })
-    },
-    loadData(objectId: number, event: { target: { _content: HTMLElement } }) {
-      let container = event.target._content
-      axios
-        .get(`${import.meta.env.VITE_API_ENDPOINT}/sport-objects/${objectId}`)
-        .then((response: { data: SportObjectInfo }) => {
-          container.innerHTML = response.data.name
-        })
+    onFilterSubmit(e: Event) {
+      e.preventDefault()
+      let formObj = this.$refs.form as FormRef
+      let mapObj = this.$refs.map as MapRef
+      mapObj.getSportObjects(
+        formObj.fedEntity ? formObj.fedEntity.id : undefined,
+        formObj.district ? formObj.district.id : undefined,
+        formObj.locality ? formObj.locality.id : undefined,
+        formObj.sportType ? formObj.sportType.id : undefined,
+        formObj.sportObjectType ? formObj.sportObjectType.id : undefined
+      )
     }
-  },
-  mounted() {
-    this.getSportObjects()
   }
 })
 </script>
+
+<style scoped>
+#tabs {
+  margin-top: 0.5em;
+}
+</style>

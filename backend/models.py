@@ -139,15 +139,23 @@ class SportObject(models.Model):
 Tortoise.init_models(["models"], "models")
 SportObject_Pydantic = pydantic_model_creator(SportObject, name="SportObject")
 FederationEntity_Pydantic = pydantic_model_creator(
-    FederationEntity, name="FederationEntity"
+    FederationEntity, name="FederationEntity", exclude=("districts",)
 )
-District_Pydantic = pydantic_model_creator(District, name="District")
-ContestType_Pydantic = pydantic_model_creator(ContestType, name="ContestType")
+District_Pydantic = pydantic_model_creator(
+    District, name="District", exclude=("localities",)
+)
+ContestType_Pydantic = pydantic_model_creator(
+    ContestType, name="ContestType", exclude=("sport_objects",)
+)
 SportObjectType_Pydantic = pydantic_model_creator(
-    SportObjectType, name="SporObjectType"
+    SportObjectType, name="SporObjectType", exclude=("sport_objects",)
 )
-SportType_Pydantic = pydantic_model_creator(SportType, name="SportType")
-Locality_Pydantic = pydantic_model_creator(Locality, name="Locality")
+SportType_Pydantic = pydantic_model_creator(
+    SportType, name="SportType", exclude=("sport_objects",)
+)
+Locality_Pydantic = pydantic_model_creator(
+    Locality, name="Locality", exclude=("sport_objects",)
+)
 SportObjectShort_Pydantic = pydantic_model_creator(
     SportObject,
     name="SportObjectShort",
