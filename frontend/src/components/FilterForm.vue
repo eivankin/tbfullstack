@@ -59,6 +59,9 @@ import VueMultiselect from 'vue-multiselect'
 import { defineComponent } from 'vue'
 import axios from 'axios'
 import type { Choice } from '@/types'
+import type { PropType } from 'vue'
+
+type SubmitCallback = (payload: Event) => void
 
 export default defineComponent({
   name: 'FilterForm',
@@ -136,7 +139,7 @@ export default defineComponent({
     this.loadSportObjectTypes()
   },
   props: {
-    onSubmit: Function
+    onSubmit: Object as PropType<SubmitCallback>
   }
 })
 </script>

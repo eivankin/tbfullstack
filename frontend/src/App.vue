@@ -3,11 +3,11 @@
     <div class="row">
       <div class="col-4">
         <tabs
-            nav-class="nav nav-tabs"
-            nav-item-class="nav-item"
-            nav-item-link-class="nav-link"
-            nav-item-link-active-class="nav-link active"
-            id="tabs"
+          nav-class="nav nav-tabs"
+          nav-item-class="nav-item"
+          nav-item-link-class="nav-link"
+          nav-item-link-active-class="nav-link active"
+          id="tabs"
         >
           <tab name="Поиск" class="nav-item">
             <FilterForm ref="form" :onSubmit="onFilterSubmit" />
@@ -15,7 +15,7 @@
           <tab name="Статистика"> </tab>
         </tabs>
       </div>
-      <div class="col-8">
+      <div class="col-8" style="padding-right: 0">
         <MapWidget ref="map" />
       </div>
     </div>
