@@ -23,6 +23,7 @@ import {
 import { defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import IsLoaded from '@/components/IsLoaded.vue'
+import type { ChartData } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, Legend, CategoryScale, LinearScale, ArcElement)
 
@@ -37,20 +38,20 @@ export default defineComponent({
     }
   },
   props: {
-    sportTypesData: Object as PropType<Array<Number>>,
-    sportTypesLabels: Object as PropType<Array<String>>,
-    sportTypesColors: Object as PropType<Array<String>>,
+    sportTypesData: Object as PropType<number[]>,
+    sportTypesLabels: Object as PropType<string[]>,
+    sportTypesColors: Object as PropType<string[]>,
     isLoaded: Boolean
   },
   computed: {
-    sportTypesChartData() {
+    sportTypesChartData(): ChartData<'pie'> {
       return {
         labels: this.sportTypesLabels,
         datasets: [
           {
             label: 'Количество объектов по видам спорта',
-            data: this.sportTypesData,
-            backgroundColor: this.sportTypesColors
+            data: this.sportTypesData ?? [],
+            backgroundColor: this.sportTypesColors ?? []
           }
         ]
       }

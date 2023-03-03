@@ -138,8 +138,9 @@ class SportObject(models.Model):
 
 Tortoise.init_models(["models"], "models")
 SportObject_Pydantic = pydantic_model_creator(
-    SportObject, name="SportObject",
-    include=('name', 'short_description', 'full_description', 'address')
+    SportObject,
+    name="SportObject",
+    include=("name", "short_description", "full_description", "address"),
 )
 FederationEntity_Pydantic = pydantic_model_creator(
     FederationEntity, name="FederationEntity", exclude=("districts",)

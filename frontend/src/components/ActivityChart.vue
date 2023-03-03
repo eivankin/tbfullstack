@@ -23,6 +23,7 @@ import {
 import { defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import IsLoaded from '@/components/IsLoaded.vue'
+import type { ChartData } from 'chart.js'
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
@@ -37,17 +38,17 @@ export default defineComponent({
     }
   },
   props: {
-    activityData: Object as PropType<Array<Number>>,
+    activityData: Object as PropType<number[]>,
     isLoaded: Boolean
   },
   computed: {
-    activityChartData() {
+    activityChartData(): ChartData<'bar'> {
       return {
         labels: ['Активен', 'Не активен'],
         datasets: [
           {
             label: 'Статус спортивных объектов',
-            data: this.activityData,
+            data: this.activityData ?? [0, 0],
             backgroundColor: ['green', 'red']
           }
         ]

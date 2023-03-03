@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import {ref, defineExpose} from 'vue'
-import type {SportObjectInfo} from "@/types";
-import type {Ref} from "vue";
+import { ref, defineExpose } from 'vue'
+import type { SportObjectInfo } from '@/types'
+import type { Ref } from 'vue'
 
-const sportObject: Ref<SportObjectInfo> = ref({name: null, short_description: null, full_description: null, address: null})
+const sportObject: Ref<SportObjectInfo> = ref({
+  name: null,
+  short_description: null,
+  full_description: null,
+  address: null
+})
 
-defineExpose({sportObject})
-
+defineExpose({ sportObject })
 </script>
 <template>
   <table class="table">
@@ -25,7 +29,7 @@ defineExpose({sportObject})
       </tr>
       <tr>
         <th scope="row">Адрес</th>
-        <td>{{ sportObject.address  ?? 'Нет данных' }}</td>
+        <td>{{ sportObject.address ?? 'Нет данных' }}</td>
       </tr>
     </tbody>
   </table>
@@ -33,7 +37,6 @@ defineExpose({sportObject})
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import type { SportObjectInfo } from '@/types'
 
 export default defineComponent({
   name: 'SportObjectCard'

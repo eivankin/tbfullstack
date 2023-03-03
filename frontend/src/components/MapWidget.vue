@@ -23,12 +23,12 @@
 </template>
 <script lang="ts">
 import axios from 'axios'
-import {createApp, defineComponent} from 'vue'
+import { createApp, defineComponent } from 'vue'
 import Spinner from '@/components/Spinner.vue'
 import type { SportObject, SportObjectInfo } from '@/types'
 import IsLoaded from '@/components/IsLoaded.vue'
 import SportObjectCard from '@/components/SportObjectCard.vue'
-import type {ComponentPublicInstance} from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 
 export default defineComponent({
   components: { Spinner, IsLoaded, SportObjectCard },
@@ -72,7 +72,9 @@ export default defineComponent({
         .then((response: { data: SportObjectInfo }) => {
           container.innerHTML = ''
           const tempDiv = document.createElement('div')
-          let card = createApp(SportObjectCard).mount(tempDiv) as ComponentPublicInstance & {sportObject: SportObjectInfo}
+          let card = createApp(SportObjectCard).mount(tempDiv) as ComponentPublicInstance & {
+            sportObject: SportObjectInfo
+          }
           card.sportObject = response.data
           container.appendChild(card.$el)
         })
