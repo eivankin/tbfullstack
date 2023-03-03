@@ -139,7 +139,7 @@ export default defineComponent({
     this.loadSportObjectTypes()
   },
   props: {
-    onSubmit: Object as PropType<SubmitCallback>
+    onSubmit: Function as PropType<SubmitCallback>
   }
 })
 </script>

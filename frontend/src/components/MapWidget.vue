@@ -1,11 +1,5 @@
 <template>
-  <div
-    class="d-flex justify-content-center align-items-center"
-    id="main-spinner"
-    :style="isLoaded ? 'display: none !important' : ''"
-  >
-    <Spinner style="width: 5em; height: 5em" />
-  </div>
+  <IsLoaded :is-loaded="isLoaded" />
   <mapbox-map
     :access-token="accessToken"
     height="100vh"
@@ -32,9 +26,11 @@ import axios from 'axios'
 import { defineComponent } from 'vue'
 import Spinner from '@/components/Spinner.vue'
 import type { SportObject, SportObjectInfo } from '@/types'
+import IsLoaded from '@/components/IsLoaded.vue'
+import SportObjectCard from '@/components/SportObjectCard.vue'
 
 export default defineComponent({
-  components: { Spinner },
+  components: { Spinner, IsLoaded, SportObjectCard },
 
   data(): { name: string; accessToken: string; sportObjects: SportObject[]; isLoaded: boolean } {
     return {
@@ -44,7 +40,7 @@ export default defineComponent({
       isLoaded: false
     }
   },
-  expose: ['getSportObjects'],
+  expose: ['getSportObjects', 'sportObjects'],
   methods: {
     getSportObjects(
       fedEntityId: number | undefined = undefined,
@@ -65,6 +61,7 @@ export default defineComponent({
         )
         .then((response) => {
           this.sportObjects = response.data
+          this.getStats()
         })
     },
     loadData(objectId: number, event: { target: { _content: HTMLElement } }) {
@@ -74,16 +71,32 @@ export default defineComponent({
         .then((response: { data: SportObjectInfo }) => {
           container.innerHTML = response.data.name
         })
+    },
+    getStats(): void {
+      let counts_active = 0
+      let counts_inactive = 0
+      let sportTypesCounts: { [key: string]: number } = {}
+      for (const sportObj of this.sportObjects) {
+        sportObj.is_active ? counts_active++ : counts_inactive++
+        for (const sportType of sportObj.sport_types) {
+          sportTypesCounts[sportType.name] = (sportTypesCounts[sportType.name] || 0) + 1
+        }
+      }
+      this.$emit(
+        'statsDataUpd',
+        [counts_active, counts_inactive],
+        Object.keys(sportTypesCounts),
+        Object.values(sportTypesCounts)
+      )
     }
   },
   mounted() {
     this.getSportObjects()
+  },
+  emits: {
+    statsDataUpd(activityData: number[], sportTypes: string[], sportTypesData: number[]) {
+      return activityData.length == 2 && sportTypesData.length == sportTypes.length
+    }
   }
 })
 </script>
-
-<style scoped>
-#main-spinner {
-  height: 100vh;
-}
-</style>
