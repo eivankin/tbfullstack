@@ -4,4 +4,4 @@
 ```bash
 docker compose up --build --abort-on-container-exit
 ```
-Сервер 
+Сервер будет доступен по адресу https://localhost/
